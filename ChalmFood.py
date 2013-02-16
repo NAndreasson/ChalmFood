@@ -20,15 +20,11 @@ class ChalmFoodCommand(sublime_plugin.TextCommand):
         for restaurant in result:
             title = result[restaurant]["title"]
             self.view.insert(edit, 0, "= " +  title + " =\n")
-
+            
             dishes = result[restaurant]["dishes"]
             for dish in dishes:
-                self.view.insert(edit, self.view.size(), dish["title"] + "\n")
-                self.view.insert(edit, self.view.size(), dish["desc"] + "\n")
-
-            # self.view.insert(edit, 0, res["desc"])
-        
-        self.view.insert(edit, self.view.size(), "Pa dig")
+                self.view.insert(edit, self.view.size(), "\t" + dish["title"] + "\n")
+                self.view.insert(edit, self.view.size(), "\t\t" + dish["desc"] + "\n")
 
 
 class DataGetter(threading.Thread):
