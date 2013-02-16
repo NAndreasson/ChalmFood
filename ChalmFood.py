@@ -1,35 +1,34 @@
 import sublime, sublime_plugin
 import threading
 import urllib2
-from HTMLParser import HTMLParser as parser
-
-
-class ChalmFoodHTMLParser(parser):
-    def __init__(self):
-        parser.__init__(self)
-        self.recording = 0
-        self.data = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "ul":
-            for name, value in attrs:
-                if name == "id" and value == "K":
-                    self.recording = 1
-
-    def handle_endtag(self, tag):
-        if tag == "ul":
-            self.recording -= 1
-
-    def handle_data(self, data):
-        if self.recording:
-            self.data.append(data)
-
+import json
 
 class ChalmFoodCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        self.view.insert(edit, 0, "Hello, World!")
+        # self.view.insert(edit, 0, "Hello, World!")
         thread = DataGetter(5)
         thread.start()
+        self.handle_threads(edit, thread)
+
+    def handle_threads(self, edit, threads):
+        if threads.is_alive():
+            sublime.set_timeout(lambda: self.handle_threads(edit, threads), 100)
+            return
+        sublime.status_message('Chalm food successfully ran the request')
+        print threads.result
+        result = threads.result
+        for restaurant in result:
+            title = result[restaurant]["title"]
+            self.view.insert(edit, 0, "= " +  title + " =\n")
+
+            dishes = result[restaurant]["dishes"]
+            for dish in dishes:
+                self.view.insert(edit, self.view.size(), dish["title"] + "\n")
+                self.view.insert(edit, self.view.size(), dish["desc"] + "\n")
+
+            # self.view.insert(edit, 0, res["desc"])
+        
+        self.view.insert(edit, self.view.size(), "Pa dig")
 
 
 class DataGetter(threading.Thread):
@@ -39,12 +38,14 @@ class DataGetter(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        pt = ChalmFoodHTMLParser()
-        siteReq = urllib2.urlopen("http://chalmerskonferens.se/dagens-menyer/johanneberg/")
-        self.result = siteReq.read()
-        self.result = self.result.decode("utf-8")
-        print self.result
-        pt.feed(self.result)
-        print pt.data
-        pt.close()
-        siteReq.close()
+        try: 
+            siteReq = urllib2.urlopen("http://localhost:5000/johanneberg", timeout=self.timeout)
+            self.result = json.load(siteReq)
+            siteReq.close()
+            return
+        except (urllib2.HTTPError) as (e):  
+            err = '%s: HTTP error %s contacting API' % (__name__, str(e.code))  
+        except (urllib2.URLError) as (e):  
+            err = '%s: URL error %s contacting API' % (__name__, str(e.reason))  
+        sublime.error_message(err)  
+        self.result = False  
