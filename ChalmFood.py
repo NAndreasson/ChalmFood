@@ -17,14 +17,21 @@ class ChalmFoodCommand(sublime_plugin.TextCommand):
     def handle_result(self, edit, result):
         sublime.status_message('Chalm food successfully ran the request')
 
+        new_tab = self.view.window().new_file()
+        new_tab.set_name("ChalmFood")
+        new_tab.set_scratch(True)
+
         for restaurant in result:
             title = restaurant["title"]
-            self.view.insert(edit, 0, "\n= " +  title + " =\n")
+            new_tab.insert(edit, 0, "\n= " +  title + " =\n")
 
             dishes = restaurant["dishes"]
             for dish in dishes:
-                self.view.insert(edit, self.view.size(), "\t" + dish["title"] + "\n")
-                self.view.insert(edit, self.view.size(), "\t\t" + dish["desc"] + "\n\n")
+                new_tab.insert(edit, new_tab.size(), "\t" + dish["title"] + "\n")
+                new_tab.insert(edit, new_tab.size(), "\t\t" + dish["desc"] + "\n\n")
+
+        new_tab.set_read_only(True)
+
 
 
 class DataGetter(threading.Thread):
