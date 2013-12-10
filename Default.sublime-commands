@@ -1,6 +1,16 @@
 [
 	{
 		"caption": "ChalmFood: Johanneberg",
-		"command": "chalm_food"
+		"command": "chalm_food",
+		"args": {
+			"campus": "johanneberg"
+		}
+	},
+	{
+		"caption": "ChalmFood: Lindholmen",
+		"command": "chalm_food",
+		"args": {
+			"campus": "lindholmen"
+		}
 	}
 ]

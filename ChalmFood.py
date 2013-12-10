@@ -5,8 +5,9 @@ import urllib.error
 import json
 
 class ChalmFoodCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        thread = DataGetter(10)
+    def run(self, edit, campus="johanneberg"):
+        url ="http://vps.nandreasson.se:5000/" + campus
+        thread = DataGetter(10, url)
 
         thread.start()
         thread.join()
@@ -18,24 +19,24 @@ class ChalmFoodCommand(sublime_plugin.TextCommand):
 
         for restaurant in result:
             title = restaurant["title"]
-            self.view.insert(edit, 0, "= " +  title + " =\n")
+            self.view.insert(edit, 0, "\n= " +  title + " =\n")
 
             dishes = restaurant["dishes"]
             for dish in dishes:
                 self.view.insert(edit, self.view.size(), "\t" + dish["title"] + "\n")
-                self.view.insert(edit, self.view.size(), "\t\t" + dish["desc"] + "\n")
-            # self.view.insert(edit, self.view.size(), "\n\n")
+                self.view.insert(edit, self.view.size(), "\t\t" + dish["desc"] + "\n\n")
 
 
 class DataGetter(threading.Thread):
-    def __init__(self, timeout):
+    def __init__(self, timeout, url):
+        self.url = url
         self.timeout = timeout
         self.result = None
         threading.Thread.__init__(self)
 
     def run(self):
         try:
-            siteReq = urllib.request.urlopen("http://vps.nandreasson.se:5000/johanneberg", timeout=self.timeout)
+            siteReq = urllib.request.urlopen(self.url, timeout=self.timeout)
             self.result = json.loads( siteReq.readall().decode("utf-8") )
             siteReq.close()
             return
