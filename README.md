@@ -1,4 +1,4 @@
 ChalmFood
 =========
 
-Sublime Text 2 plugin
+Sublime Text 3 plugin
